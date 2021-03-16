@@ -4,13 +4,13 @@
 mod config;
 use config::*;
 
-use acmd;
 use skyline::hooks::{getRegionAddress, Region};
 use skyline::nn::ro::LookupSymbol;
 use skyline::{hook, install_hook};
 use smash::app::lua_bind::*;
 use smash::lib::lua_const::*;
 use smash::lua2cpp::L2CFighterCommon;
+use smash_script::*;
 use std::convert::TryInto;
 use toml::Value;
 
@@ -29,20 +29,18 @@ static MUSIC_SEARCH_CODE: &[u8] = &[
 ];
 
 // Use this for general per-frame fighter-level hooks
-pub fn once_per_fighter_frame(fighter: &mut L2CFighterCommon) {
-    unsafe {
-        let lua_state = fighter.lua_state_agent;
-        let module_accessor = smash::app::sv_system::battle_object_module_accessor(lua_state);
-        ENTRY_ID =
-            WorkModule::get_int(module_accessor, *FIGHTER_INSTANCE_WORK_ID_INT_ENTRY_ID) as usize;
-        let fighter_manager = *(FIGHTER_MANAGER_ADDR as *mut *mut smash::app::FighterManager);
-        VICTOR = FighterManager::get_top_rank_player(fighter_manager, 0) as usize;
-        if ENTRY_ID == VICTOR {
-            VICTORY_COLOR_INDEX =
-                WorkModule::get_int(module_accessor, *FIGHTER_INSTANCE_WORK_ID_INT_COLOR)
-                    .try_into()
-                    .unwrap();
-        }
+unsafe fn once_per_fighter_frame(fighter: &mut L2CFighterCommon) {
+    let lua_state = fighter.lua_state_agent;
+    let module_accessor = smash::app::sv_system::battle_object_module_accessor(lua_state);
+    ENTRY_ID =
+        WorkModule::get_int(module_accessor, *FIGHTER_INSTANCE_WORK_ID_INT_ENTRY_ID) as usize;
+    let fighter_manager = *(FIGHTER_MANAGER_ADDR as *mut *mut smash::app::FighterManager);
+    VICTOR = FighterManager::get_top_rank_player(fighter_manager, 0) as usize;
+    if ENTRY_ID == VICTOR {
+        VICTORY_COLOR_INDEX =
+            WorkModule::get_int(module_accessor, *FIGHTER_INSTANCE_WORK_ID_INT_COLOR)
+                .try_into()
+                .unwrap();
     }
 }
 
@@ -125,6 +123,6 @@ pub fn main() {
         }
     }
 
-    acmd::add_custom_hooks!(once_per_fighter_frame);
+    smash_script::add_fighter_frame_callbacks!(once_per_fighter_frame);
     install_hook!(music_function_replace);
 }
