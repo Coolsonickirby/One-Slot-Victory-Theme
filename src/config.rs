@@ -2,7 +2,7 @@ use std::sync::Mutex;
 use std::{
     collections::HashMap,
     fs,
-    path::Path,
+    path::{Path, PathBuf},
 };
 use toml::Value;
 
@@ -57,7 +57,7 @@ pub fn read_from_umm_path(path: &Path) {
                 entry_path.push("victory.toml");
 
                 if fs::metadata(&entry_path).is_ok() {
-                    let res = match fs::read_to_string(entry_path) {
+                    match fs::read_to_string(entry_path) {
                         Ok(content) => {
                             add_to_config(content);
                         }
@@ -73,12 +73,13 @@ pub fn read_from_umm_path(path: &Path) {
     }
 }
 
-pub fn read_from_rom_path() {
-    match fs::read_to_string("rom:/arc/victory.toml"){
+pub fn read_from_arc_path(mut path: PathBuf) {
+    path.push("victory.toml");
+    match fs::read_to_string(&path){
         Ok(res) => {
             add_to_config(res)
         }
-        Err(_) => {println!("[One Slot Victory::read_from_rom_path] Failed to read rom:/arc/victory.toml")}
+        Err(_) => {println!("[One Slot Victory::read_from_rom_path] Failed to read {}", path.display())}
     }
 }
 
@@ -107,7 +108,7 @@ fn add_to_config(content: String) {
                         .unwrap()
                         .id_color
                         .insert(
-                            k.as_str().replace("costume_", "").parse::<usize>().unwrap(),
+                            k.as_str().replace("costume_", "").replace("c", "").parse::<usize>().unwrap(),
                             v.as_integer().unwrap() as usize,
                         );
                 }

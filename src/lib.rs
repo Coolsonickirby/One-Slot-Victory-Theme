@@ -1,13 +1,12 @@
 #![feature(concat_idents)]
 #![feature(proc_macro_hygiene)]
-#![feature(str_strip)]
 mod config;
 use config::*;
 
 use acmd;
 use skyline::hooks::{getRegionAddress, Region};
 use skyline::nn::ro::LookupSymbol;
-use skyline::{hook, install_hook};
+use skyline::install_hook;
 use smash::app::lua_bind::*;
 use smash::lib::lua_const::*;
 use smash::lua2cpp::L2CFighterCommon;
@@ -88,6 +87,23 @@ pub fn music_function_replace(
     );
 }
 
+pub fn parseArcropConfig(content: String){
+    match content.parse::<Value>().unwrap()["paths"]["arc"].as_str() {
+        Some(res) => {
+            read_from_arc_path(std::path::PathBuf::from(&res.to_string()));
+            println!("[One Slot Victory::main] Finished reading ARC path!");
+        }
+        None => println!("[One Slot Victory::main] Failed parsing ARCropolis config file (ARC Path)!"),
+    }
+    match content.parse::<Value>().unwrap()["paths"]["umm"].as_str() {
+        Some(res) => {
+            read_from_umm_path(std::path::Path::new(&res.to_string()));
+            println!("[One Slot Victory::main] Finished reading UMM path!");
+        }
+        None => println!("[One Slot Victory::main] Failed parsing ARCropolis config file (UMM Path)!"),
+    }
+}
+
 #[skyline::main(name = "one_slot_victory")]
 pub fn main() {
     unsafe {
@@ -99,19 +115,18 @@ pub fn main() {
         );
     }
     lazy_static::initialize(&VICTORY_CONFIG);
-    read_from_rom_path();
 
-    match std::fs::read_to_string("sd:/atmosphere/contents/01006A800016E000/romfs/arcropolis.toml")
-    {
-        Ok(content) => match content.parse::<Value>().unwrap()["paths"]["umm"].as_str() {
-            Some(res) => {
-                read_from_umm_path(std::path::Path::new(&res.to_string()));
-                println!("[One Slot Victory::main] Finished reading UMM path!");
-            }
-            None => println!("[One Slot Victory::main] Failed parsing ARCropolis config file!"),
-        },
-        Err(_) => println!("[One Slot Victory::main] 😢"),
-    };
+    match std::fs::read_to_string("sd:/ultimate/arcropolis/config.toml") {
+        Ok(content) => parseArcropConfig(content),
+        Err(_err) => {
+            println!("[One Slot Victory::main] Failed reading new ARCropolis Config Path! Trying old one");
+            match std::fs::read_to_string("sd:/atmosphere/contents/01006A800016E000/romfs/arcropolis.toml")
+            {
+                Ok(content) => parseArcropConfig(content),
+                Err(_) => println!("[One Slot Victory::main] Failed reading old ARCropolis Config Path!"),
+            };
+        }
+    }
 
     unsafe {
         let text_ptr = getRegionAddress(Region::Text) as *const u8;
