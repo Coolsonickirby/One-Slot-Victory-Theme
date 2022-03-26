@@ -3,7 +3,7 @@
 mod config;
 use config::*;
 
-use acmd;
+use smashline::*;
 use skyline::hooks::{getRegionAddress, Region};
 use skyline::nn::ro::LookupSymbol;
 use skyline::install_hook;
@@ -28,6 +28,7 @@ static MUSIC_SEARCH_CODE: &[u8] = &[
 ];
 
 // Use this for general per-frame fighter-level hooks
+#[fighter_frame_callback]
 pub fn once_per_fighter_frame(fighter: &mut L2CFighterCommon) {
     unsafe {
         let lua_state = fighter.lua_state_agent;
@@ -120,6 +121,6 @@ pub fn main() {
         }
     }
 
-    acmd::add_custom_hooks!(once_per_fighter_frame);
+    install_agent_frame_callbacks!(once_per_fighter_frame);
     install_hook!(music_function_replace);
 }
