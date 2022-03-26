@@ -87,21 +87,11 @@ pub fn music_function_replace(
     );
 }
 
-pub fn parseArcropConfig(content: String){
-    match content.parse::<Value>().unwrap()["paths"]["arc"].as_str() {
-        Some(res) => {
-            read_from_arc_path(std::path::PathBuf::from(&res.to_string()));
-            println!("[One Slot Victory::main] Finished reading ARC path!");
-        }
-        None => println!("[One Slot Victory::main] Failed parsing ARCropolis config file (ARC Path)!"),
-    }
-    match content.parse::<Value>().unwrap()["paths"]["umm"].as_str() {
-        Some(res) => {
-            read_from_umm_path(std::path::Path::new(&res.to_string()));
-            println!("[One Slot Victory::main] Finished reading UMM path!");
-        }
-        None => println!("[One Slot Victory::main] Failed parsing ARCropolis config file (UMM Path)!"),
-    }
+pub fn read_from_paths(){
+    read_from_arc_path(std::path::PathBuf::from("rom:/arc/"));
+    println!("[One Slot Victory::main] Finished reading ARC path!");
+    read_from_umm_path(std::path::Path::new("sd:/ultimate/mods/"));
+    println!("[One Slot Victory::main] Finished reading UMM path!");
 }
 
 #[skyline::main(name = "one_slot_victory")]
@@ -116,17 +106,7 @@ pub fn main() {
     }
     lazy_static::initialize(&VICTORY_CONFIG);
 
-    match std::fs::read_to_string("sd:/ultimate/arcropolis/config.toml") {
-        Ok(content) => parseArcropConfig(content),
-        Err(_err) => {
-            println!("[One Slot Victory::main] Failed reading new ARCropolis Config Path! Trying old one");
-            match std::fs::read_to_string("sd:/atmosphere/contents/01006A800016E000/romfs/arcropolis.toml")
-            {
-                Ok(content) => parseArcropConfig(content),
-                Err(_) => println!("[One Slot Victory::main] Failed reading old ARCropolis Config Path!"),
-            };
-        }
-    }
+    read_from_paths();
 
     unsafe {
         let text_ptr = getRegionAddress(Region::Text) as *const u8;

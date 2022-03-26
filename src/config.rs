@@ -10,10 +10,12 @@ lazy_static::lazy_static! {
     pub static ref VICTORY_CONFIG: Mutex<VictoryConfig> = Mutex::new(VictoryConfig::new());
 }
 
+#[derive(Debug)]
 pub struct VictorEntry {
     pub id_color: HashMap<usize, usize>,
 }
 
+#[derive(Debug)]
 pub struct VictoryConfig {
     pub entries: HashMap<u64, VictorEntry>,
 }
@@ -57,7 +59,7 @@ pub fn read_from_umm_path(path: &Path) {
                 entry_path.push("victory.toml");
 
                 if fs::metadata(&entry_path).is_ok() {
-                    match fs::read_to_string(entry_path) {
+                    match fs::read_to_string(&entry_path) {
                         Ok(content) => {
                             add_to_config(content);
                         }
