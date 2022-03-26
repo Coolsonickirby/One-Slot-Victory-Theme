@@ -13,8 +13,8 @@ crate-type = ["cdylib"]
 [dependencies]
 lazy_static = "1.4"
 skyline = { git = "https://github.com/ultimate-research/skyline-rs.git" }
-skyline_smash = { git = "https://github.com/ultimate-research/skyline-smash.git" }
-acmd = { git = "https://github.com/ultimate-research/skyline-acmd.git" }
+skyline_smash = { git = "https://github.com/blu-dev/skyline-smash.git", features = ["weak_l2cvalue"] }
+smashline = { git = "https://github.com/blu-dev/smashline.git", branch = "development" }
 libc-nnsdk = { git = "https://github.com/ultimate-research/libc-nnsdk" }
 toml = "0.5.8"
 
